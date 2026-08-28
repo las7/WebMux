@@ -1,0 +1,169 @@
+from __future__ import annotations
+
+from contextlib import asynccontextmanager
+from typing import Annotated, Any
+
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response, status
+from fastapi.responses import JSONResponse
+
+from webmux.access import CapabilityCredentialAccess, PrincipalCredentialAccess
+from webmux.capabilities import CapabilityError
+from webmux.config import Settings
+from webmux.container import Container
+from webmux.credentials import CredentialOwnershipError
+from webmux.models import (
+    CapabilityCreate,
+    CapabilityView,
+    CredentialCreate,
+    CredentialView,
+    ErrorDetail,
+    Principal,
+    ProviderHealthView,
+    ProviderView,
+    SearchRequest,
+    SearchResponse,
+)
+from webmux.router import RoutingError
+
+
+async def require_principal(
+    user_id: Annotated[str | None, Header(alias="X-WebMux-User-Id")] = None,
+    org_id: Annotated[str | None, Header(alias="X-WebMux-Org-Id")] = None,
+) -> Principal:
+    # V0 trust boundary: an authenticating gateway must set and sanitize these.
+    if not user_id or not org_id:
+        raise HTTPException(status_code=401, detail="authenticated user and org are required")
+    return Principal(user_id=user_id, org_id=org_id)
+
+
+def create_app(
+    settings: Settings | None = None,
+    *,
+    container: Container | None = None,
+) -> FastAPI:
+    owned_container = container is None
+    service = container or Container.build(settings or Settings.from_env())
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI):
+        yield
+        if owned_container:
+            await service.close()
+
+    app = FastAPI(
+        title="WebMux",
+        version="0.1.0",
+        description="Neutral BYOK routing across web-search providers",
+        lifespan=lifespan,
+    )
+    app.state.container = service
+
+    @app.exception_handler(RoutingError)
+    async def routing_error_handler(_: Request, exc: RoutingError) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            content={
+                "error": ErrorDetail(
+                    code=exc.code,
+                    message=exc.safe_message,
+                    provider=exc.provider,
+                ).model_dump(),
+                "request_id": exc.request_id,
+            },
+        )
+
+    @app.post("/v1/search", response_model=SearchResponse)
+    async def search(payload: SearchRequest, request: Request) -> SearchResponse:
+        authorization = request.headers.get("authorization")
+        if authorization:
+            scheme, separator, token = authorization.partition(" ")
+            if scheme.lower() != "bearer" or not separator or not token:
+                raise HTTPException(status_code=401, detail="invalid authorization header")
+            try:
+                claims = service.capabilities.verify(token, expected_job_id=payload.job_id)
+            except CapabilityError as exc:
+                raise HTTPException(status_code=401, detail=str(exc)) from exc
+            access = CapabilityCredentialAccess(claims)
+        else:
+            access = PrincipalCredentialAccess(
+                service.vault,
+                principal_from_request(request),
+                payload.job_id,
+            )
+        return await service.router.search(payload, access)
+
+    @app.post(
+        "/v1/credentials",
+        response_model=CredentialView,
+        status_code=status.HTTP_201_CREATED,
+    )
+    async def create_credential(
+        payload: CredentialCreate,
+        owner: Annotated[Principal, Depends(require_principal)],
+    ) -> CredentialView:
+        return service.vault.create(owner, payload.provider, payload.api_key, payload.name)
+
+    @app.get("/v1/credentials", response_model=list[CredentialView])
+    async def list_credentials(
+        owner: Annotated[Principal, Depends(require_principal)],
+    ) -> list[CredentialView]:
+        return service.vault.list(owner)
+
+    @app.delete("/v1/credentials/{credential_id}", status_code=status.HTTP_204_NO_CONTENT)
+    async def delete_credential(
+        credential_id: str,
+        owner: Annotated[Principal, Depends(require_principal)],
+    ) -> Response:
+        if not service.vault.delete(owner, credential_id):
+            raise HTTPException(status_code=404, detail="credential not found")
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+    @app.post(
+        "/v1/capabilities",
+        response_model=CapabilityView,
+        status_code=status.HTTP_201_CREATED,
+    )
+    async def create_capability(
+        payload: CapabilityCreate,
+        owner: Annotated[Principal, Depends(require_principal)],
+    ) -> CapabilityView:
+        try:
+            return service.capabilities.issue(owner, payload)
+        except CredentialOwnershipError as exc:
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
+        except CapabilityError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.get("/v1/providers", response_model=list[ProviderView])
+    async def list_providers() -> list[ProviderView]:
+        return [
+            ProviderView(
+                name=name,
+                enabled=service.settings.provider_configs[name].enabled,
+                estimated_cost=service.settings.provider_configs[name].estimated_cost,
+            )
+            for name in service.providers
+        ]
+
+    @app.get("/v1/providers/health", response_model=list[ProviderHealthView])
+    async def provider_health() -> list[ProviderHealthView]:
+        return service.health.all()
+
+    @app.get("/v1/requests/{request_id}")
+    async def get_request(
+        request_id: str,
+        owner: Annotated[Principal, Depends(require_principal)],
+    ) -> dict[str, Any]:
+        result = service.telemetry.get_request(request_id, owner)
+        if result is None:
+            raise HTTPException(status_code=404, detail="request not found")
+        return result
+
+    def principal_from_request(request: Request) -> Principal:
+        user_id = request.headers.get("X-WebMux-User-Id")
+        org_id = request.headers.get("X-WebMux-Org-Id")
+        if not user_id or not org_id:
+            raise HTTPException(status_code=401, detail="authenticated user and org are required")
+        return Principal(user_id=user_id, org_id=org_id)
+
+    return app

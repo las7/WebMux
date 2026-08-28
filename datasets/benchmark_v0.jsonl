@@ -1,0 +1,200 @@
+{"query":"latest stable Linux kernel release and notable changes","category":"fresh_current"}
+{"query":"current NVIDIA CUDA toolkit release notes","category":"fresh_current"}
+{"query":"latest PostgreSQL minor security releases","category":"fresh_current"}
+{"query":"recent WebAssembly component model developments","category":"fresh_current"}
+{"query":"today's major open source software releases","category":"fresh_current"}
+{"query":"latest US Federal Reserve interest rate decision","category":"fresh_current"}
+{"query":"current EU AI Act implementation timeline","category":"fresh_current"}
+{"query":"latest Rust stable release features","category":"fresh_current"}
+{"query":"recent Kubernetes security advisories","category":"fresh_current"}
+{"query":"latest Python release and known regressions","category":"fresh_current"}
+{"query":"current browser support for CSS anchor positioning","category":"fresh_current"}
+{"query":"latest Android API level requirements for Play Store apps","category":"fresh_current"}
+{"query":"recent changes to GitHub Actions hosted runners","category":"fresh_current"}
+{"query":"current AWS service health incidents","category":"fresh_current"}
+{"query":"latest npm supply chain security incident","category":"fresh_current"}
+{"query":"recent breakthroughs in solid state batteries","category":"fresh_current"}
+{"query":"current WHO global health emergency updates","category":"fresh_current"}
+{"query":"latest SpaceX launch result","category":"fresh_current"}
+{"query":"current UK inflation rate official statistics","category":"fresh_current"}
+{"query":"latest SQLite release notes","category":"fresh_current"}
+{"query":"recent OpenSSL security advisory","category":"fresh_current"}
+{"query":"latest ECMAScript proposal stage changes","category":"fresh_current"}
+{"query":"current PCI DSS version and transition dates","category":"fresh_current"}
+{"query":"latest Cloudflare outage postmortem","category":"fresh_current"}
+{"query":"recent changes to Apple App Store review guidelines","category":"fresh_current"}
+{"query":"Python asyncio TaskGroup exception handling official documentation","category":"technical_documentation"}
+{"query":"PostgreSQL row level security CREATE POLICY examples","category":"technical_documentation"}
+{"query":"Rust std pin module safety invariants documentation","category":"technical_documentation"}
+{"query":"Kubernetes NetworkPolicy egress selector semantics","category":"technical_documentation"}
+{"query":"MDN structuredClone transferable objects documentation","category":"technical_documentation"}
+{"query":"SQLite WAL checkpoint modes official documentation","category":"technical_documentation"}
+{"query":"Linux io_uring registered buffers API documentation","category":"technical_documentation"}
+{"query":"Terraform provider plugin framework plan modifiers","category":"technical_documentation"}
+{"query":"AWS SigV4 canonical request specification","category":"technical_documentation"}
+{"query":"OpenTelemetry trace context propagation specification","category":"technical_documentation"}
+{"query":"HTTP 103 Early Hints RFC semantics","category":"technical_documentation"}
+{"query":"Docker BuildKit cache mount syntax reference","category":"technical_documentation"}
+{"query":"Redis streams consumer group pending entries documentation","category":"technical_documentation"}
+{"query":"Go memory model happens-before channel close","category":"technical_documentation"}
+{"query":"Pydantic v2 custom core schema example","category":"technical_documentation"}
+{"query":"FastAPI lifespan async context manager documentation","category":"technical_documentation"}
+{"query":"Git protocol version 2 packet line specification","category":"technical_documentation"}
+{"query":"Nix flakes lock file schema documentation","category":"technical_documentation"}
+{"query":"Prometheus histogram native histogram specification","category":"technical_documentation"}
+{"query":"WebAuthn discoverable credentials resident keys specification","category":"technical_documentation"}
+{"query":"QUIC connection migration RFC documentation","category":"technical_documentation"}
+{"query":"systemd socket activation file descriptor passing","category":"technical_documentation"}
+{"query":"ClickHouse ReplacingMergeTree deduplication behavior","category":"technical_documentation"}
+{"query":"Cilium eBPF kube-proxy replacement requirements","category":"technical_documentation"}
+{"query":"OAuth 2.0 pushed authorization requests RFC","category":"technical_documentation"}
+{"query":"essays connecting legibility and software platform design","category":"semantic_discovery"}
+{"query":"research about why users trust algorithmic recommendations","category":"semantic_discovery"}
+{"query":"blog posts on local-first software and collaboration tradeoffs","category":"semantic_discovery"}
+{"query":"papers about semantic entropy for hallucination detection","category":"semantic_discovery"}
+{"query":"thoughtful critiques of microservice organizational incentives","category":"semantic_discovery"}
+{"query":"case studies of tools that became protocols","category":"semantic_discovery"}
+{"query":"writing about maintenance as a form of innovation","category":"semantic_discovery"}
+{"query":"research on how interface defaults shape behavior","category":"semantic_discovery"}
+{"query":"articles comparing agent memory to human note taking","category":"semantic_discovery"}
+{"query":"papers on information foraging in developer tools","category":"semantic_discovery"}
+{"query":"essays about neutral infrastructure marketplaces","category":"semantic_discovery"}
+{"query":"research connecting queuing theory and user experience","category":"semantic_discovery"}
+{"query":"postmortems where retries amplified an outage","category":"semantic_discovery"}
+{"query":"papers on calibrated confidence in retrieval systems","category":"semantic_discovery"}
+{"query":"essays about reversible decisions in engineering","category":"semantic_discovery"}
+{"query":"case studies of successful bring your own key products","category":"semantic_discovery"}
+{"query":"research on benchmark contamination in language models","category":"semantic_discovery"}
+{"query":"writing about APIs as institutional boundaries","category":"semantic_discovery"}
+{"query":"papers comparing sparse and dense retrieval on long-tail queries","category":"semantic_discovery"}
+{"query":"essays on observability changing system design","category":"semantic_discovery"}
+{"query":"research about human evaluation disagreement in search relevance","category":"semantic_discovery"}
+{"query":"case studies of open standards displacing proprietary gateways","category":"semantic_discovery"}
+{"query":"articles on the economics of API aggregation","category":"semantic_discovery"}
+{"query":"papers about freshness-aware information retrieval","category":"semantic_discovery"}
+{"query":"essays relating capability security to object-oriented design","category":"semantic_discovery"}
+{"query":"founders and funding history of Fly.io","category":"company_person_discovery"}
+{"query":"current leadership team at Anthropic","category":"company_person_discovery"}
+{"query":"who created SQLite and their design philosophy","category":"company_person_discovery"}
+{"query":"companies building confidential computing for AI workloads","category":"company_person_discovery"}
+{"query":"founder of Tailscale previous projects","category":"company_person_discovery"}
+{"query":"maintainers of the uv Python package manager","category":"company_person_discovery"}
+{"query":"lead researchers behind retrieval augmented generation paper","category":"company_person_discovery"}
+{"query":"company behind ClickHouse ownership and funding","category":"company_person_discovery"}
+{"query":"people who designed the WireGuard protocol","category":"company_person_discovery"}
+{"query":"startups offering browser infrastructure for AI agents","category":"company_person_discovery"}
+{"query":"current CEO and founders of Cloudflare","category":"company_person_discovery"}
+{"query":"organizations maintaining the WebAssembly runtime Wasmtime","category":"company_person_discovery"}
+{"query":"authors of the Raft consensus algorithm","category":"company_person_discovery"}
+{"query":"company history and founders of Cockroach Labs","category":"company_person_discovery"}
+{"query":"researchers working on capability-based operating systems","category":"company_person_discovery"}
+{"query":"companies commercializing eBPF observability","category":"company_person_discovery"}
+{"query":"creator of the Zig programming language background","category":"company_person_discovery"}
+{"query":"founders and investors of browser automation startup Browserbase","category":"company_person_discovery"}
+{"query":"maintainers of the cryptography Python library","category":"company_person_discovery"}
+{"query":"people behind the OpenTelemetry project","category":"company_person_discovery"}
+{"query":"founders of Vercel and previous company history","category":"company_person_discovery"}
+{"query":"companies developing vector databases founded before 2020","category":"company_person_discovery"}
+{"query":"current executive team at NVIDIA","category":"company_person_discovery"}
+{"query":"authors and maintainers of PostgreSQL","category":"company_person_discovery"}
+{"query":"company that develops the Parallel Search API","category":"company_person_discovery"}
+{"query":"official Python packaging user guide","category":"navigational"}
+{"query":"GitHub status page","category":"navigational"}
+{"query":"AWS pricing calculator official","category":"navigational"}
+{"query":"PostgreSQL download page","category":"navigational"}
+{"query":"Kubernetes API reference official","category":"navigational"}
+{"query":"Rust playground","category":"navigational"}
+{"query":"Cloudflare dashboard login","category":"navigational"}
+{"query":"NVIDIA CUDA compatibility documentation","category":"navigational"}
+{"query":"Let's Encrypt certificate transparency logs","category":"navigational"}
+{"query":"OpenAI API status official","category":"navigational"}
+{"query":"EU legislation official journal search","category":"navigational"}
+{"query":"US SEC company filings search","category":"navigational"}
+{"query":"Mozilla browser compatibility data GitHub","category":"navigational"}
+{"query":"Linux kernel source repository official","category":"navigational"}
+{"query":"Docker Hub official PostgreSQL image","category":"navigational"}
+{"query":"IETF RFC index","category":"navigational"}
+{"query":"PyPI FastAPI project page","category":"navigational"}
+{"query":"Homebrew package search","category":"navigational"}
+{"query":"Google Cloud service health dashboard","category":"navigational"}
+{"query":"Node.js release schedule official","category":"navigational"}
+{"query":"SQLite official download page","category":"navigational"}
+{"query":"OWASP application security verification standard","category":"navigational"}
+{"query":"W3C WebAuthn recommendation","category":"navigational"}
+{"query":"CVE database official search","category":"navigational"}
+{"query":"Parallel Search API documentation","category":"navigational"}
+{"query":"capital of Burkina Faso","category":"simple_factual"}
+{"query":"boiling point of ethanol at sea level","category":"simple_factual"}
+{"query":"year the first transatlantic telegraph cable succeeded","category":"simple_factual"}
+{"query":"number of bones in an adult human body","category":"simple_factual"}
+{"query":"SI unit of electrical capacitance","category":"simple_factual"}
+{"query":"author of The Left Hand of Darkness","category":"simple_factual"}
+{"query":"largest moon of Saturn","category":"simple_factual"}
+{"query":"chemical symbol for tungsten","category":"simple_factual"}
+{"query":"height of Mount Kilimanjaro","category":"simple_factual"}
+{"query":"language family of Hungarian","category":"simple_factual"}
+{"query":"date the Berlin Wall fell","category":"simple_factual"}
+{"query":"smallest prime number greater than 100","category":"simple_factual"}
+{"query":"inventor of the World Wide Web","category":"simple_factual"}
+{"query":"currency used in Vietnam","category":"simple_factual"}
+{"query":"distance from Earth to Moon average kilometers","category":"simple_factual"}
+{"query":"first woman to win a Nobel Prize","category":"simple_factual"}
+{"query":"ISO country code for New Zealand","category":"simple_factual"}
+{"query":"planet with the shortest day","category":"simple_factual"}
+{"query":"composer of The Four Seasons","category":"simple_factual"}
+{"query":"year PostgreSQL was first released","category":"simple_factual"}
+{"query":"HTTP status code for Too Many Requests","category":"simple_factual"}
+{"query":"default port number for PostgreSQL","category":"simple_factual"}
+{"query":"creator of the C programming language","category":"simple_factual"}
+{"query":"largest lake in Africa by area","category":"simple_factual"}
+{"query":"meaning of the acronym POSIX","category":"simple_factual"}
+{"query":"original source of the phrase worse is better Richard Gabriel","category":"obscure_long_tail"}
+{"query":"DEC SRC report on the Vesta software configuration system","category":"obscure_long_tail"}
+{"query":"history of the Plan 9 plumber interprocess messaging tool","category":"obscure_long_tail"}
+{"query":"why SQLite uses a bytecode virtual machine","category":"obscure_long_tail"}
+{"query":"first paper describing content-defined chunking for backups","category":"obscure_long_tail"}
+{"query":"PostgreSQL SSI dangerous structure false positive examples","category":"obscure_long_tail"}
+{"query":"origin of the Unix less is more philosophy quote","category":"obscure_long_tail"}
+{"query":"Xerox PARC Cedar capability security architecture","category":"obscure_long_tail"}
+{"query":"why DNS uses bailiwick checking historical attacks","category":"obscure_long_tail"}
+{"query":"the Morning Paper summary of Anna Karenina distributed systems principle","category":"obscure_long_tail"}
+{"query":"history of KeyKOS and EROS capability operating systems","category":"obscure_long_tail"}
+{"query":"original design rationale for HTTP idempotency keys","category":"obscure_long_tail"}
+{"query":"case study of the 500 mile email bug","category":"obscure_long_tail"}
+{"query":"early implementation notes for rsync rolling checksum","category":"obscure_long_tail"}
+{"query":"why Linux close can report delayed write errors","category":"obscure_long_tail"}
+{"query":"Mesa monitors paper priority inversion discussion","category":"obscure_long_tail"}
+{"query":"historical debate over threads versus events Ousterhout","category":"obscure_long_tail"}
+{"query":"original Dynamo paper sloppy quorum hinted handoff rationale","category":"obscure_long_tail"}
+{"query":"search engine freshness metrics temporal intent papers","category":"obscure_long_tail"}
+{"query":"Macaroons authorization credentials paper contextual caveats","category":"obscure_long_tail"}
+{"query":"Waterken web-key capability model documentation","category":"obscure_long_tail"}
+{"query":"Hyrum's Law earliest published formulation","category":"obscure_long_tail"}
+{"query":"Lampson hints for computer system design end-to-end caching","category":"obscure_long_tail"}
+{"query":"history of the qmail security guarantee challenge","category":"obscure_long_tail"}
+{"query":"original SEDA architecture performance paper","category":"obscure_long_tail"}
+{"query":"best managed PostgreSQL providers for a small SaaS comparison","category":"product_commercial"}
+{"query":"Brave versus Exa versus Parallel search API pricing","category":"product_commercial"}
+{"query":"laptops with user-replaceable memory and Linux support","category":"product_commercial"}
+{"query":"SOC 2 compliant secret managers for startups comparison","category":"product_commercial"}
+{"query":"cheapest object storage with S3 compatibility and egress pricing","category":"product_commercial"}
+{"query":"browser automation cloud pricing comparison","category":"product_commercial"}
+{"query":"best error monitoring tools for Python FastAPI","category":"product_commercial"}
+{"query":"hosted ClickHouse services cost comparison","category":"product_commercial"}
+{"query":"small business hardware security key bulk pricing","category":"product_commercial"}
+{"query":"vector database benchmarks and managed pricing","category":"product_commercial"}
+{"query":"CI services offering ARM Linux hosted runners","category":"product_commercial"}
+{"query":"zero egress fee cloud storage providers","category":"product_commercial"}
+{"query":"managed WebSocket platforms pricing and limits","category":"product_commercial"}
+{"query":"best mechanical keyboard for quiet shared office","category":"product_commercial"}
+{"query":"observability platforms with OpenTelemetry native ingestion pricing","category":"product_commercial"}
+{"query":"email API providers deliverability and pricing comparison","category":"product_commercial"}
+{"query":"managed Redis alternatives with durable storage","category":"product_commercial"}
+{"query":"code signing certificate providers for open source projects","category":"product_commercial"}
+{"query":"GPU cloud providers with hourly H100 pricing","category":"product_commercial"}
+{"query":"API gateway products supporting bring your own key","category":"product_commercial"}
+{"query":"enterprise search APIs with data retention controls","category":"product_commercial"}
+{"query":"passwordless authentication vendors passkey support pricing","category":"product_commercial"}
+{"query":"static site hosting services custom headers free tier","category":"product_commercial"}
+{"query":"hosted Grafana alternatives pricing comparison","category":"product_commercial"}
+{"query":"commercial support options for PostgreSQL","category":"product_commercial"}

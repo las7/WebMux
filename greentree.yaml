@@ -1,0 +1,10 @@
+version: 1
+checks:
+  test:
+    run: UV_CACHE_DIR=/tmp/webmux-uv-cache UV_PROJECT_ENVIRONMENT=/tmp/webmux-greentree-env uv run --all-groups pytest -q
+    required_for_publish: true
+    watch: true
+  lint:
+    run: UV_CACHE_DIR=/tmp/webmux-uv-cache UV_PROJECT_ENVIRONMENT=/tmp/webmux-greentree-env uv run --all-groups ruff check .
+    required_for_publish: true
+    watch: true
