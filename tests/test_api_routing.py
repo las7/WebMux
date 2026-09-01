@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import httpx
 
-from webmux.health import HealthSample
+from webmux.health import HealthSample, tenant_scope
+from webmux.models import Principal
 
 
 def successful_payload(provider: str) -> dict:
@@ -164,10 +165,12 @@ async def test_cheapest_and_lowest_latency_selection(build_service, identity_hea
         )
         assert cheapest.json()["provider"] == "parallel"
 
+        scope = tenant_scope(Principal(user_id="user_test", org_id="org_test"))
         for provider, latency in (("parallel", 300), ("brave", 20), ("exa", 100)):
             container.health.record(
                 provider,
                 HealthSample(success=True, latency_ms=latency, error_type=None),
+                scope=scope,
             )
         lowest = await client.post(
             "/v1/search",

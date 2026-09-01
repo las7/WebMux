@@ -16,6 +16,10 @@ from webmux.providers.base import (
 class ParallelProvider(SearchProvider):
     name = "parallel"
     endpoint = "https://api.parallel.ai/v1/search"
+    # Every Parallel request knob V0 knows of is either a validated field or a cost
+    # multiplier (`processor`, `max_results`, `max_chars_per_result`), so this
+    # adapter accepts no caller-supplied options.
+    allowed_provider_options = frozenset()
 
     async def search(
         self,
@@ -34,7 +38,7 @@ class ParallelProvider(SearchProvider):
             payload["advanced_settings"]["source_policy"] = {
                 "after_date": start.date().isoformat()
             }
-        payload.update(options.provider_options.get(self.name, {}))
+        payload.update(self._extra_options(options, payload))
 
         started = perf_counter()
         response = await self._request(

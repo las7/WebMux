@@ -15,6 +15,20 @@ from webmux.providers.base import (
 class BraveProvider(SearchProvider):
     name = "brave"
     endpoint = "https://api.search.brave.com/res/v1/web/search"
+    # Presentation and filtering knobs only. `count` stays out: it is the validated
+    # result cap, and one request is one billed call whatever these say.
+    allowed_provider_options = frozenset(
+        {
+            "extra_snippets",
+            "offset",
+            "result_filter",
+            "safesearch",
+            "spellcheck",
+            "text_decorations",
+            "ui_lang",
+            "units",
+        }
+    )
 
     async def search(
         self,
@@ -35,7 +49,7 @@ class BraveProvider(SearchProvider):
             params["country"] = options.country.upper()
         if options.language:
             params["search_lang"] = options.language
-        params.update(options.provider_options.get(self.name, {}))
+        params.update(self._extra_options(options, params))
 
         started = perf_counter()
         response = await self._request(

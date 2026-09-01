@@ -13,6 +13,7 @@ Requires Python 3.11+ and `uv`.
 ```bash
 uv sync --all-groups
 export WEBMUX_MASTER_KEY="$(uv run webmux-keygen)"
+export WEBMUX_GATEWAY_SECRET="$(uv run webmux-keygen)"
 export WEBMUX_DATABASE_PATH="$PWD/webmux.sqlite3"
 uv run webmux-api
 ```
@@ -37,6 +38,22 @@ exa_only = web.search("semantic search papers", provider="exa", job_id="job_123"
 
 Credentials must be enrolled and a job capability issued before using the client.
 Never give provider keys to an agent workload.
+
+Enrolling credentials and issuing capabilities is the trusted control plane's job.
+It calls WebMux with an identity signed by `WEBMUX_GATEWAY_SECRET`, which WebMux
+verifies before it believes any `X-WebMux-User-Id` / `X-WebMux-Org-Id` pair:
+
+```python
+control_plane = WebMux(
+    "http://127.0.0.1:8000",
+    user_id="user_1",
+    org_id="org_1",
+    gateway_secret=os.environ["WEBMUX_GATEWAY_SECRET"],
+)
+```
+
+Never hand that secret to an agent workload: with it, a caller can act as any
+tenant. Agents get a capability and nothing else.
 
 ## Routing
 

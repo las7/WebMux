@@ -4,11 +4,23 @@ from typing import Any
 
 import httpx
 
+from webmux.gateway import (
+    ORG_ID_HEADER,
+    SIGNATURE_HEADER,
+    USER_ID_HEADER,
+    coerce_secret,
+    sign_identity,
+)
 from webmux.models import ProviderName, SearchResponse, Strategy
 
 
 class WebMux:
-    """Small synchronous client for agent tools and application code."""
+    """Small synchronous client for agent tools and application code.
+
+    Agent workloads pass a job `capability`. Identity mode is for the trusted
+    control plane alone: it needs `gateway_secret`, so a caller who only knows a
+    user and org identifier cannot mint that identity for itself.
+    """
 
     def __init__(
         self,
@@ -17,15 +29,26 @@ class WebMux:
         capability: str | None = None,
         user_id: str | None = None,
         org_id: str | None = None,
+        gateway_secret: str | bytes | None = None,
         timeout: float = 20.0,
     ) -> None:
         headers: dict[str, str] = {}
         if capability:
             headers["Authorization"] = f"Bearer {capability}"
-        elif user_id and org_id:
-            headers.update({"X-WebMux-User-Id": user_id, "X-WebMux-Org-Id": org_id})
+        elif user_id and org_id and gateway_secret:
+            secret = coerce_secret(gateway_secret)
+            headers.update(
+                {
+                    USER_ID_HEADER: user_id,
+                    ORG_ID_HEADER: org_id,
+                    SIGNATURE_HEADER: sign_identity(secret, user_id, org_id),
+                }
+            )
         else:
-            raise ValueError("provide a job capability or authenticated user/org identity")
+            raise ValueError(
+                "provide a job capability, or an authenticated user/org identity "
+                "together with the gateway secret"
+            )
         self._client = httpx.Client(base_url=base_url, headers=headers, timeout=timeout)
 
     def search(

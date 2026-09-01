@@ -15,13 +15,15 @@ FastAPI -> SearchRouter -> provider adapter -> search provider
 
 ## Components
 
-- `api.py` exposes the REST surface and authenticates direct or capability-based
-  requests.
+- `api.py` exposes the REST surface and authenticates capability-based requests or
+  gateway-signed identities.
+- `gateway.py` signs and verifies the identity headers a gateway asserts.
 - `router.py` selects providers and records every attempt.
 - `providers/` contains provider-specific requests and normalization.
 - `credentials.py` encrypts provider keys and resolves opaque handles.
 - `capabilities.py` issues short-lived job scopes.
-- `health.py` maintains rolling health and latency measurements.
+- `health.py` maintains rolling health and latency measurements per tenant,
+  plus one shared series for provider-wide outages.
 - `telemetry.py` stores requests, attempts, and normalized results in SQLite.
 - `benchmark.py` performs evaluation fanout outside the production router.
 
@@ -52,6 +54,9 @@ and unusable result shapes. Authentication and other HTTP 4xx errors stop routin
 | `GET` | `/v1/providers` |
 | `GET` | `/v1/providers/health` |
 | `GET` | `/v1/requests/:id` |
+
+Every path requires either a job capability (`/v1/search` only) or a gateway-signed
+principal.
 
 Every provider attempt records its request/job identity, query, strategy, timing,
 success or error, status, estimated cost, result count, fallback decision, and
