@@ -5,6 +5,8 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from webmux.gateway import coerce_secret
+
 
 @dataclass(frozen=True, slots=True)
 class ProviderConfig:
@@ -27,6 +29,9 @@ DEFAULT_PROVIDERS: dict[str, ProviderConfig] = {
 class Settings:
     database_path: Path
     master_key: bytes
+    # Shared with the authenticating gateway only. Identity headers are refused
+    # while this is unset, so a misconfigured deployment fails closed.
+    gateway_secret: bytes | None = None
     provider_configs: dict[str, ProviderConfig] = field(
         default_factory=lambda: dict(DEFAULT_PROVIDERS)
     )
@@ -48,9 +53,22 @@ class Settings:
         if len(key) != 32:
             raise RuntimeError("WEBMUX_MASTER_KEY must decode to exactly 32 bytes")
 
+        gateway_secret = os.getenv("WEBMUX_GATEWAY_SECRET")
+        if not gateway_secret:
+            raise RuntimeError(
+                "WEBMUX_GATEWAY_SECRET is required; share it with the authenticating "
+                "gateway only so WebMux can tell gateway-set identity headers from "
+                "caller-set ones"
+            )
+        try:
+            secret = coerce_secret(gateway_secret)
+        except ValueError as exc:
+            raise RuntimeError(f"WEBMUX_GATEWAY_SECRET is unusable: {exc}") from exc
+
         return cls(
             database_path=Path(os.getenv("WEBMUX_DATABASE_PATH", "./webmux.sqlite3")),
             master_key=key,
+            gateway_secret=secret,
         )
 
 

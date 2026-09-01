@@ -17,7 +17,8 @@ not fan out.
 ## Run
 
 Start WebMux and enroll Brave, Exa, and Parallel credentials for the benchmark
-identity, then run:
+identity. The runner signs its identity headers, so export the same
+`WEBMUX_GATEWAY_SECRET` the service uses, then run:
 
 ```bash
 uv run webmux-benchmark run \

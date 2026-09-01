@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import json
 import math
+import os
 import statistics
 from collections import defaultdict
 from dataclasses import dataclass
@@ -12,6 +13,14 @@ from time import perf_counter
 from typing import Any
 
 import httpx
+
+from webmux.gateway import (
+    ORG_ID_HEADER,
+    SIGNATURE_HEADER,
+    USER_ID_HEADER,
+    coerce_secret,
+    sign_identity,
+)
 
 PROVIDERS = ("brave", "exa", "parallel")
 
@@ -108,9 +117,16 @@ async def run_one(
 
 async def run_benchmark(args: argparse.Namespace) -> None:
     dataset = load_dataset(args.dataset)
+    gateway_secret = os.getenv("WEBMUX_GATEWAY_SECRET")
+    if not gateway_secret:
+        raise SystemExit(
+            "WEBMUX_GATEWAY_SECRET is required to sign the benchmark identity headers"
+        )
+    secret = coerce_secret(gateway_secret)
     headers = {
-        "X-WebMux-User-Id": args.user_id,
-        "X-WebMux-Org-Id": args.org_id,
+        USER_ID_HEADER: args.user_id,
+        ORG_ID_HEADER: args.org_id,
+        SIGNATURE_HEADER: sign_identity(secret, args.user_id, args.org_id),
     }
     semaphore = asyncio.Semaphore(args.concurrency)
 

@@ -11,6 +11,13 @@ from webmux.capabilities import CapabilityError
 from webmux.config import Settings
 from webmux.container import Container
 from webmux.credentials import CredentialOwnershipError
+from webmux.gateway import (
+    ORG_ID_HEADER,
+    SIGNATURE_HEADER,
+    USER_ID_HEADER,
+    verify_identity,
+)
+from webmux.health import tenant_scope
 from webmux.models import (
     CapabilityCreate,
     CapabilityView,
@@ -26,14 +33,42 @@ from webmux.models import (
 from webmux.router import RoutingError
 
 
-async def require_principal(
-    user_id: Annotated[str | None, Header(alias="X-WebMux-User-Id")] = None,
-    org_id: Annotated[str | None, Header(alias="X-WebMux-Org-Id")] = None,
+def verified_principal(
+    settings: Settings,
+    user_id: str | None,
+    org_id: str | None,
+    signature: str | None,
 ) -> Principal:
-    # V0 trust boundary: an authenticating gateway must set and sanitize these.
+    """Accept an identity only when the gateway proved it set the headers itself.
+
+    The identity headers alone are a vault-admin credential and authorize spending a
+    tenant's provider keys, so an unsigned pair is worth exactly nothing here. With
+    no secret configured WebMux refuses identity requests rather than serving open.
+    """
     if not user_id or not org_id:
         raise HTTPException(status_code=401, detail="authenticated user and org are required")
+    if settings.gateway_secret is None:
+        raise HTTPException(
+            status_code=503,
+            detail="gateway identity verification is not configured",
+        )
+    if not signature or not verify_identity(settings.gateway_secret, user_id, org_id, signature):
+        raise HTTPException(status_code=401, detail="invalid gateway identity signature")
     return Principal(user_id=user_id, org_id=org_id)
+
+
+async def require_principal(
+    request: Request,
+    user_id: Annotated[str | None, Header(alias=USER_ID_HEADER)] = None,
+    org_id: Annotated[str | None, Header(alias=ORG_ID_HEADER)] = None,
+    signature: Annotated[str | None, Header(alias=SIGNATURE_HEADER)] = None,
+) -> Principal:
+    return verified_principal(
+        request.app.state.container.settings,
+        user_id,
+        org_id,
+        signature,
+    )
 
 
 def create_app(
@@ -135,7 +170,9 @@ def create_app(
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     @app.get("/v1/providers", response_model=list[ProviderView])
-    async def list_providers() -> list[ProviderView]:
+    async def list_providers(
+        _: Annotated[Principal, Depends(require_principal)],
+    ) -> list[ProviderView]:
         return [
             ProviderView(
                 name=name,
@@ -146,8 +183,11 @@ def create_app(
         ]
 
     @app.get("/v1/providers/health", response_model=list[ProviderHealthView])
-    async def provider_health() -> list[ProviderHealthView]:
-        return service.health.all()
+    async def provider_health(
+        owner: Annotated[Principal, Depends(require_principal)],
+    ) -> list[ProviderHealthView]:
+        # One tenant's own measurements, never a cross-tenant aggregate.
+        return service.health.report(tenant_scope(owner))
 
     @app.get("/v1/requests/{request_id}")
     async def get_request(
@@ -160,10 +200,11 @@ def create_app(
         return result
 
     def principal_from_request(request: Request) -> Principal:
-        user_id = request.headers.get("X-WebMux-User-Id")
-        org_id = request.headers.get("X-WebMux-Org-Id")
-        if not user_id or not org_id:
-            raise HTTPException(status_code=401, detail="authenticated user and org are required")
-        return Principal(user_id=user_id, org_id=org_id)
+        return verified_principal(
+            service.settings,
+            request.headers.get(USER_ID_HEADER),
+            request.headers.get(ORG_ID_HEADER),
+            request.headers.get(SIGNATURE_HEADER),
+        )
 
     return app

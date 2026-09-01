@@ -16,6 +16,21 @@ from webmux.providers.base import (
 class ExaProvider(SearchProvider):
     name = "exa"
     endpoint = "https://api.exa.ai/search"
+    # Query-shaping knobs only. `contents` stays out: livecrawl and text retrieval
+    # multiply the per-call charge on the credential owner's Exa account.
+    allowed_provider_options = frozenset(
+        {
+            "category",
+            "endCrawlDate",
+            "endPublishedDate",
+            "excludeDomains",
+            "excludeText",
+            "includeDomains",
+            "includeText",
+            "startCrawlDate",
+            "userLocation",
+        }
+    )
 
     async def search(
         self,
@@ -33,7 +48,7 @@ class ExaProvider(SearchProvider):
         start = freshness_start(options.freshness)
         if start:
             payload["startPublishedDate"] = start.isoformat()
-        payload.update(options.provider_options.get(self.name, {}))
+        payload.update(self._extra_options(options, payload))
 
         started = perf_counter()
         response = await self._request(

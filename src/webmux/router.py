@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 from webmux.access import CredentialAccess
 from webmux.config import ProviderConfig
-from webmux.health import HealthSample, HealthTracker
+from webmux.health import GLOBAL_SCOPE, HealthSample, HealthTracker, tenant_scope
 from webmux.models import AttemptSummary, SearchRequest, SearchResponse, SearchResult
 from webmux.providers.base import MalformedProviderResponseError, ProviderError, SearchProvider
 from webmux.telemetry import AttemptRecord, TelemetryStore
@@ -96,6 +96,7 @@ class SearchRouter:
         else:
             names = list(request.providers or self.providers)
 
+        scope = tenant_scope(access.principal)
         eligible: list[Candidate] = []
         missing_credentials: list[str] = []
         unhealthy: list[str] = []
@@ -112,7 +113,10 @@ class SearchRouter:
             if binding is None:
                 missing_credentials.append(name)
                 continue
-            if request.strategy != "provider" and self.health.snapshot(name).state == "unhealthy":
+            if (
+                request.strategy != "provider"
+                and self.health.routing_state(name, scope) == "unhealthy"
+            ):
                 unhealthy.append(name)
                 continue
             eligible.append(Candidate(provider=provider, credential_handle=binding.handle))
@@ -132,7 +136,9 @@ class SearchRouter:
         if request.strategy == "cheapest":
             eligible.sort(
                 key=lambda candidate: (
-                    0 if self.health.snapshot(candidate.provider.name).state == "healthy" else 1,
+                    0
+                    if self.health.routing_state(candidate.provider.name, scope) == "healthy"
+                    else 1,
                     self.provider_configs[candidate.provider.name].estimated_cost,
                     list(self.providers).index(candidate.provider.name),
                 )
@@ -141,8 +147,10 @@ class SearchRouter:
         if request.strategy == "lowest_latency":
             eligible.sort(
                 key=lambda candidate: (
-                    0 if self.health.snapshot(candidate.provider.name).state == "healthy" else 1,
-                    self.health.snapshot(candidate.provider.name).ewma_latency_ms
+                    0
+                    if self.health.routing_state(candidate.provider.name, scope) == "healthy"
+                    else 1,
+                    self.health.routing_latency_ms(candidate.provider.name, scope)
                     or self.provider_configs[candidate.provider.name].default_latency_ms,
                     list(self.providers).index(candidate.provider.name),
                 )
@@ -159,6 +167,7 @@ class SearchRouter:
     ) -> SearchResponse:
         summaries: list[AttemptSummary] = []
         last_error: ProviderError | None = None
+        scope = tenant_scope(access.principal)
         for index, candidate in enumerate(candidates, start=1):
             started_at = datetime.now(UTC)
             timer = perf_counter()
@@ -232,10 +241,11 @@ class SearchRouter:
                     result=result,
                 )
             )
-            self.health.record(
-                candidate.provider.name,
-                HealthSample(success=success, latency_ms=latency_ms, error_type=error_type),
-            )
+            sample = HealthSample(success=success, latency_ms=latency_ms, error_type=error_type)
+            self.health.record(candidate.provider.name, sample, scope=scope)
+            if success or (error is not None and error.provider_wide):
+                # Only provider-wide outcomes reach the signal every tenant routes on.
+                self.health.record(candidate.provider.name, sample, scope=GLOBAL_SCOPE)
 
             if result is not None:
                 return SearchResponse(

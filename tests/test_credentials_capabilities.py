@@ -73,7 +73,11 @@ async def test_plaintext_is_absent_from_handles_tokens_responses_and_telemetry(
     assert plaintext.encode() not in database_bytes
 
 
-async def test_capability_is_job_provider_and_owner_scoped(build_service, identity_headers) -> None:
+async def test_capability_is_job_provider_and_owner_scoped(
+    build_service,
+    identity_headers,
+    gateway_headers,
+) -> None:
     def handler(_: httpx.Request) -> httpx.Response:
         return httpx.Response(500)
 
@@ -88,7 +92,7 @@ async def test_capability_is_job_provider_and_owner_scoped(build_service, identi
         ).json()
         denied = await client.post(
             "/v1/capabilities",
-            headers={"X-WebMux-User-Id": "other", "X-WebMux-Org-Id": "org_test"},
+            headers=gateway_headers("other", "org_test"),
             json={"job_id": "job_1", "credentials": {"exa": credential["id"]}},
         )
         assert denied.status_code == 403

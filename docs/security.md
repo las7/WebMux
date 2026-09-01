@@ -17,18 +17,53 @@ Long-lived provider keys must not enter agent environment variables, files,
 command-line arguments, prompts, model context, capabilities, responses, or
 telemetry.
 
+## Gateway identity
+
+`X-WebMux-User-Id` and `X-WebMux-Org-Id` name the tenant whose vault is read and
+whose provider keys are spent, so WebMux does not take them on trust. The gateway
+must also send `X-WebMux-Gateway-Signature`:
+
+```text
+base64url(HMAC-SHA256(WEBMUX_GATEWAY_SECRET,
+    "webmux:v1:gateway-identity:<len(org)>:<org>:<len(user)>:<user>"))
+```
+
+WebMux recomputes it and compares with `hmac.compare_digest`. The identity fields
+are length-prefixed, so a signature issued for one principal cannot be replayed for
+another. With `WEBMUX_GATEWAY_SECRET` unset, identity requests are refused with 503
+rather than served open; capability-bearing requests are unaffected.
+
+`WEBMUX_GATEWAY_SECRET` belongs to the gateway and WebMux only. It is a
+tenant-impersonation credential: anything holding it can enroll, list, and delete
+credentials for any tenant, mint capabilities, and spend any tenant's provider keys.
+
 ## Deployment requirements
 
 - Put WebMux behind TLS and authenticated ingress.
-- Ingress must remove caller-supplied `X-WebMux-User-Id` and
-  `X-WebMux-Org-Id` headers, then set verified values itself.
-- Load `WEBMUX_MASTER_KEY` only into the trusted WebMux service. Persist and back it
-  up; losing it makes enrolled credentials unrecoverable.
+- Ingress must remove caller-supplied `X-WebMux-User-Id`, `X-WebMux-Org-Id`, and
+  `X-WebMux-Gateway-Signature` headers, then set verified, signed values itself.
+- Load `WEBMUX_MASTER_KEY` and `WEBMUX_GATEWAY_SECRET` only into the trusted WebMux
+  service and its gateway. Persist and back up the master key; losing it makes
+  enrolled credentials unrecoverable.
 - Restrict access to SQLite because queries and results can contain sensitive data.
 - Set a telemetry retention policy before production use.
 
 `WEBMUX_MASTER_KEY` is the service encryption root, not a provider key. WebMux also
 derives the capability signing key from it with a domain-separated HMAC.
+
+## Tenant isolation
+
+- Health is tracked per (tenant, provider). A tenant's authentication failures,
+  rate limits, and rejected requests steer only that tenant's routing. Only
+  provider-wide outcomes -- timeouts, transport failures, HTTP 5xx, and malformed
+  responses -- feed the shared signal every tenant routes on.
+- `GET /v1/providers` and `GET /v1/providers/health` require a principal, and the
+  health response reports the caller's own measurements, never a cross-tenant
+  aggregate.
+- `options.provider_options` is allowlisted per provider and can never override a
+  field WebMux validates. A capability holder therefore cannot raise the result
+  cap, turn on Exa livecrawl, or change the Parallel processor on the credential
+  owner's provider account.
 
 ## V0 limitations
 

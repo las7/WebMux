@@ -3,6 +3,7 @@ from __future__ import annotations
 import html
 import re
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from datetime import UTC, datetime, timedelta
 from typing import Any, Protocol
 
@@ -18,6 +19,10 @@ class SecretResolver(Protocol):
 class ProviderError(Exception):
     error_type = "provider_error"
     fallback_eligible = False
+    # True only when the failure is the provider's, not one tenant's credential,
+    # quota, or request. Only these feed the shared health signal; anything a
+    # single tenant can provoke stays inside that tenant's health scope.
+    provider_wide = False
 
     def __init__(
         self,
@@ -35,9 +40,11 @@ class ProviderError(Exception):
 class ProviderTimeoutError(ProviderError):
     error_type = "timeout"
     fallback_eligible = True
+    provider_wide = True
 
 
 class ProviderRateLimitError(ProviderError):
+    # 429 is charged against the calling tenant's own key quota.
     error_type = "rate_limit"
     fallback_eligible = True
 
@@ -45,9 +52,11 @@ class ProviderRateLimitError(ProviderError):
 class ProviderUnavailableError(ProviderError):
     error_type = "provider_unavailable"
     fallback_eligible = True
+    provider_wide = True
 
 
 class ProviderAuthenticationError(ProviderError):
+    # The tenant enrolled a key the provider rejects; other tenants are unaffected.
     error_type = "authentication"
 
 
@@ -58,15 +67,20 @@ class ProviderRequestError(ProviderError):
 class MalformedProviderResponseError(ProviderError):
     error_type = "malformed_response"
     fallback_eligible = True
+    provider_wide = True
 
 
 class UnusableProviderResponseError(ProviderError):
+    # An empty or unusable result set is a property of the query, not the provider.
     error_type = "unusable_response"
     fallback_eligible = True
 
 
 class SearchProvider(ABC):
     name: str
+    # Escape hatch for provider-specific knobs. Only these keys may reach the
+    # provider, and never one that would override a field WebMux validates.
+    allowed_provider_options: frozenset[str] = frozenset()
 
     def __init__(
         self,
@@ -92,6 +106,28 @@ class SearchProvider(ABC):
 
     def compatible(self, options: SearchOptions) -> bool:
         return self.name in {"brave", "exa", "parallel"} and options.max_results <= 20
+
+    def _extra_options(
+        self,
+        options: SearchOptions,
+        reserved: Iterable[str],
+    ) -> dict[str, Any]:
+        """Caller-supplied provider options, allowlisted and unable to override us."""
+        requested = options.provider_options.get(self.name, {})
+        if not requested:
+            return {}
+        reserved_keys = set(reserved)
+        rejected = sorted(
+            key
+            for key in requested
+            if key in reserved_keys or key not in self.allowed_provider_options
+        )
+        if rejected:
+            raise ProviderRequestError(
+                self.name,
+                f"{self.name} does not accept provider_options: {', '.join(rejected)}",
+            )
+        return dict(requested)
 
     async def _request(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
         try:
