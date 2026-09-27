@@ -74,5 +74,6 @@ Production search never fans out. Provider fanout exists only in the benchmark.
 ## Verify
 
 ```bash
-greentree test --json
+uv run --all-groups pytest -q
+uv run --all-groups ruff check .
 ```
